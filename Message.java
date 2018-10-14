@@ -1,12 +1,12 @@
 import java.io.Serializable;
-//test for 4th commit
+//test for 6th commit
 public class Message implements Serializable {
 	private static final long serialVersionUID = -2723363051271966964L;
 	Integer firstNumber = null;
 	Integer secondNumber = null;
 	Integer result = null;
 	String message = null;
-    public void test(){}
+    public void test6(){}
 	public Message(Integer firstNumber, Integer secondNumber){
 		this.firstNumber = firstNumber;
 		this.secondNumber = secondNumber;

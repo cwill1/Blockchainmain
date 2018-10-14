@@ -1,6 +1,6 @@
 
 import javafx.scene.Node;
-//test for 4th commit
+//test for 6th commit
 public class Block {
     Block next;
     public String hash;
@@ -11,5 +11,5 @@ public class Block {
         this.blockData = _data;
     }
 
-    public void test(){}
+    public void test6(){}
 }

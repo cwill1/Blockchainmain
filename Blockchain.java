@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
 import java.net.*;
-//test for 4th commit
+//test for 6th commit
 //starts a new server process at a new port
 public class Blockchain {
 
@@ -24,7 +24,7 @@ public class Blockchain {
 //
     }
 
-    public void test(){}
+    public void test6(){}
     //create blockchain ledger
     public static void populateBlockChainLedger(String text){
             if(text != null) {

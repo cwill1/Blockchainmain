@@ -3,7 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-//test for 4th commit
+//test for 6th commit
 public class Client {
     //socket setup
     Socket socket = null;
@@ -28,7 +28,7 @@ public class Client {
 
     }
 
-    public void test(){}
+    public void test6(){}
     public void setup() throws UnknownHostException, IOException, ClassNotFoundException {
         socket = new Socket("localhost", 2652);
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
