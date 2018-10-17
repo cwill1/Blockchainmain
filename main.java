@@ -3,16 +3,16 @@ import java.io.IOException;
 public class main {
     //test for 4th commit
     public static ProcessBuilder builder;
-    public static Blockchain pro;
+    public static Peer pro;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 	// create 3 processes
         //builder.directory(new File("/Users/cwill/IdeaProjects/BlockChain/src/"));
-        //builder = new ProcessBuilder(new String[] {"java", "Blockchain"});
+        //builder = new ProcessBuilder(new String[] {"java", "Peer"});
         //builder.redirectError();
         //builder.directory(new File("/Users/cwill/IdeaProjects/BlockChain/src/"));
-       Blockchain tester = new Blockchain(2650);
-     System.out.println(tester.PORT);
+
+     //System.out.println(tester.PORT);
 
 
 

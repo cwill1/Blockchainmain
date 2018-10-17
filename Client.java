@@ -3,6 +3,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+
 //test for 6th commit
 public class Client {
     //socket setup
@@ -50,18 +52,28 @@ public class Client {
 	}
 	*/
 
-    public void connectAndSendMessage() throws UnknownHostException, IOException, ClassNotFoundException {
-        Integer firstNumber = 10;
-        Integer secondNumber = 15;
-        Socket socket = new Socket("localhost", 2652);
+    public void connectAndSendMessage(String _message, Integer _port) throws UnknownHostException, IOException, ClassNotFoundException {
+        Socket socket = new Socket("localhost", _port);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        Message message = new Message(firstNumber,secondNumber);
+        Message message = new Message(_message);
         objectOutputStream.writeObject(message);
         Message returnMessage = (Message)objectInputStream.readObject();
         System.out.println(returnMessage.getResult());
         socket.close();
     }
+
+    public void connectAndSendMessage(ArrayList<Integer> _message , Integer _port) throws UnknownHostException, IOException, ClassNotFoundException {
+        Socket socket = new Socket("localhost", _port);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+        Message message = new Message(_message);
+        objectOutputStream.writeObject(message);
+        Message returnMessage = (Message)objectInputStream.readObject();
+        System.out.println(returnMessage.getResult());
+        socket.close();
+    }
+
     public void sendMessage(String _message) throws UnknownHostException, IOException, ClassNotFoundException {
 
         Message message = new Message(_message);
