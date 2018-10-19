@@ -26,14 +26,15 @@ public class Peer {
 	public static ServerSingleton mySingleton;
 
     public static void p2TriggerMulticastOfPublicKeys() throws IOException, ClassNotFoundException, InterruptedException{
-        ArrayList<Integer> publicKeys = new ArrayList<Integer>();
-        messageSender = new Client(4930, 4931,4932);
+        ArrayList<String> publicKeys = new ArrayList<String>();
+        messageSender = new Client("4930", "4931","4932");
         //if port is P2
         //save the public keys to this port
 
-        publicKeys.add(4930);
-        publicKeys.add(4931);
-        publicKeys.add(4932);
+        publicKeys.add("4930");
+        publicKeys.add("4931");
+        publicKeys.add("4932");
+
         mySingleton.setPublicKeys(publicKeys);
         //multicast public keys
         messageSender.connectAndSendMessage(publicKeys, 4930);
@@ -110,6 +111,7 @@ public class Peer {
             if(PORT == 4932){
                 //2 trigger multicast of public keys
                 p2TriggerMulticastOfPublicKeys();
+
                 multiCastHappened = true;
             }
              System.out.println("incoming client request...");
@@ -135,6 +137,7 @@ class Assistant extends Thread {
     Block Blockchain;
     PrintStream systemOut;
     public static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
+    public static ServerSingleton mySingleton = ServerSingleton.getInstance();
 
     Assistant (Socket s) {connectionSocket = s;
     }
@@ -152,14 +155,14 @@ class Assistant extends Thread {
             objectInputStream = new ObjectInputStream(connectionSocket.getInputStream());
             objectOutputStream = new ObjectOutputStream(connectionSocket.getOutputStream());
             //Message returnMessage = (Message)objectInputStream.readObject();
-             Object returnMessage = (Object)objectInputStream.readObject();
+            Object returnMessage = (Object)objectInputStream.readObject();
             //store the updated blockchain in blockchain
             //this.Blockchain = returnMessage.blockChain;
 
             //close the communication between the server and the client
             objectOutputStream.writeObject(returnMessage);
-
-            systemOut.println("Test: Server printing message from client : " + returnMessage);
+            mySingleton.setPublicKeys(returnMessage);
+            systemOut.println("Test: Server printing message from client : " + mySingleton.getPublicKeys());
             connectionSocket.close();
 
             //close the Input/Output operation if there is a failure
@@ -196,13 +199,17 @@ class Assistant extends Thread {
 
 class ServerSingleton implements Serializable {
     private static ServerSingleton myInstance = null;
-    private static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
+    private static Object publicKeys = new ArrayList<String>();
+    private static Block blockChain;
 
-    public static ArrayList<Integer> getPublicKeys() {
+    public static Object getPublicKeys() {
         return publicKeys;
     }
 
-    public static void setPublicKeys(ArrayList<Integer> publicKeys) {
+    public static void setPublicKeys(ArrayList<String> publicKeys) {
+        ServerSingleton.publicKeys = publicKeys;
+    }
+    public static void setPublicKeys(Object publicKeys) {
         ServerSingleton.publicKeys = publicKeys;
     }
 

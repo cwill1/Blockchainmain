@@ -16,21 +16,23 @@ public class Client {
 
 
     //ports
-    public static Integer port1;
-    public static Integer port2;
-    public static Integer port3;
+    public static String port1;
+    public static String port2;
+    public static String port3;
 
 	public Client(){}
 
-    public Client(Integer port){
+    public Client(String port){
 	    this.port1 = port;
     }
-    public Client(Integer port1, Integer port2, Integer port3){
-	    this.port1 = port1;
-	    this.port2 = port2;
-	    this.port3 = port3;
+
+    public Client(String port1, String port2, String port3){
+        this.port1 = port1;
+        this.port2 = port2;
+        this.port3 = port3;
 
     }
+
 
     public void test6(){}
     public void setup() throws UnknownHostException, IOException, ClassNotFoundException {
@@ -68,18 +70,16 @@ public class Client {
         socket.close();
     }
 
-    public void connectAndSendMessage(ArrayList<Integer> publicKeys, Integer _port) throws UnknownHostException, IOException,
-            ClassNotFoundException, InterruptedException {
+    public void connectAndSendMessage(ArrayList<String> publicKeys, Integer _port) throws UnknownHostException, IOException,
+            ClassNotFoundException, InterruptedException,ClassCastException {
         Thread.sleep(1000);
 
         Socket socket = new Socket("localhost", _port);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        Message keys = new Message(publicKeys);
-        keys.setPublicKeys(publicKeys);
-        Client.publicKeys = publicKeys;
+        ArrayList<String> keys = publicKeys;
         objectOutputStream.writeObject(keys);
-        Message returnMessage = (Message)objectInputStream.readObject();
+        Object returnMessage = (Object) objectInputStream.readObject();
         socket.close();
     }
 
