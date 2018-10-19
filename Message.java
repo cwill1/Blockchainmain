@@ -4,12 +4,19 @@ import java.util.ArrayList;
 //test for 6th commit
 public class Message implements Serializable {
 	private static final long serialVersionUID = -2723363051271966964L;
-	Integer firstNumber = null;
-	Integer secondNumber = null;
-	Integer result = null;
-	String message = null;
-	ArrayList<Integer> publicKeys = null;
-	public static Block blockChain;
+	Integer firstNumber;
+	Integer secondNumber;
+	Integer result;
+	String message;
+    public static ArrayList<Integer> publicKeys;
+    public static Block blockChain;
+
+
+
+    public static void setPublicKeys(ArrayList<Integer> _publicKeys) {
+        publicKeys = _publicKeys;
+    }
+
 
     public void test6(){}
 	public Message(Integer firstNumber, Integer secondNumber){
@@ -21,8 +28,13 @@ public class Message implements Serializable {
 	}
 
 	public Message(ArrayList<Integer>  _publicKeys){
-        this.publicKeys = _publicKeys;
+
+    	this.publicKeys = _publicKeys;
     }
+
+	public ArrayList<Integer> getPublicKeys (){
+        return publicKeys;
+	}
 
 	public Integer getFirstNumber() {
 		return firstNumber;

@@ -4,8 +4,9 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
-import java.net.*;
-import java.util.ArrayList;
+import java.util.*;
+import java.io.Serializable;
+
 
 //test for 6th commit
 //starts a new server process at a new port
@@ -13,57 +14,62 @@ public class Peer {
 
     //keep information that has to be kept the same
 
-	public static int PORT = 4930;
+	public static int PORT = 0;
 	public static int publicKey;
 	public static ServerSocket serverSocket;
 	public static Socket socket;
     public static BufferedReader input;
 	public static Block head;
 	public static Client messageSender;
-	public static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
+	public static boolean multiCastHappened = false;
+	public static PrintStream systemOut = System.out;
+	public static ServerSingleton mySingleton;
 
-    public static void peerSetUp (Integer _port) throws IOException, ClassNotFoundException{
-        PORT = _port;
-        publicKey = PORT;
+    public static void p2TriggerMulticastOfPublicKeys() throws IOException, ClassNotFoundException, InterruptedException{
+        ArrayList<Integer> publicKeys = new ArrayList<Integer>();
         messageSender = new Client(4930, 4931,4932);
         //if port is P2
+        //save the public keys to this port
+
         publicKeys.add(4930);
         publicKeys.add(4931);
         publicKeys.add(4932);
+        mySingleton.setPublicKeys(publicKeys);
+        //multicast public keys
+        messageSender.connectAndSendMessage(publicKeys, 4930);
+        messageSender.connectAndSendMessage(publicKeys, 4931);
+        messageSender.connectAndSendMessage(publicKeys, 4932);
 
-        if (PORT == 4930){
-            //remove public key from arrayList
-            publicKeys.remove(0);
-            //add public keys to arrayList
-         //multicast public keys
-            for (int i = 0; i < publicKeys.size(); i ++) {
-                messageSender.connectAndSendMessage(publicKeys, publicKeys.get(i));
-            }
-        }
+
+
+        //multicast the public keys if the PORT is 4932
+
     }
 
     public void test6(){}
 
     //create blockchain ledger
     public static void populateBlockChainLedger(String text){
-            if(text != null) {
-                try {
-                    PrintWriter outPutWrite = new PrintWriter(
-                            new BufferedWriter(
-                                    new FileWriter("Blockchainledger.xml", true)));
-                    outPutWrite.println(text);
-                    outPutWrite.close();
-                } catch (IOException e) {
-                    //exception handling left as an exercise for the reader
-                }
+        if(text != null) {
+            try {
+                PrintWriter outPutWrite = new PrintWriter(
+                        new BufferedWriter(
+                                new FileWriter("Blockchainledger.xml", true)));
+                outPutWrite.println(text);
+                outPutWrite.close();
+            } catch (IOException e) {
+                //exception handling left as an exercise for the reader
             }
+        }
     }
 
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         //System.out.println("Peer up & ready for connections...");
-        //peerSetUp(4930);
+        //p2TriggerMulticastOfPublicKeys(4930);
+        mySingleton = ServerSingleton.getInstance();
         String enterkey = null;
-        while((enterkey == null)) {
+        //while((enterkey == null)) {
             if (args.length < 1) {
                 //prompt for port
                 input = new BufferedReader(new InputStreamReader(System.in));
@@ -71,17 +77,20 @@ public class Peer {
                 enterkey = input.readLine();
             }
             if(args.length > 0){
-               switch (enterkey){
-                   case "start process 0": enterkey = "4930";
-                   case "start process 1": enterkey = "4931";
-                   case "start process 2": enterkey = "4932";
+                enterkey = args[2];
+                switch (enterkey){
+                   //1 start servers in the order p0, p1, p2
+                    //this is all done in the bash script with the command line
+                   case "0": enterkey = "4930"; PORT = 4930; System.out.println(enterkey); break;
+                   case "1": enterkey = "4931"; PORT = 4931; System.out.println(enterkey); break;
+                   case "2": enterkey = "4932"; PORT = 4932; System.out.println(enterkey); break;
                }
             }
-        }
+        //}
         PORT = Integer.parseInt(enterkey);
         //add code to connect and send messages to the ports that are availible
-
         //populate Peer xml with header
+        //1st port
         if(PORT == 4930) {
             //check if file exists
             File file = new File("src/Blockchainledger.xml");
@@ -89,26 +98,28 @@ public class Peer {
                 file.delete();
             }
             populateBlockChainLedger("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            //2 trigger multicast of public keys
         }
-
         //print out what port they connected at
-        System.out.println("We sucessfully started a process");
-
-        //instantiate a peer
-
-
         System.out.println("Peer up & ready for connections...");
+        //instantiate a peer
 	    head = new Block("firstblock");
-
         serverSocket = new ServerSocket(PORT);
-
         while(true) {
-             System.out.println("Peer up & ready for connections...");
-             socket = serverSocket.accept();
-             new Assistant(socket).start();
-        }
+            //3rd port ..multicast once
+            if(PORT == 4932){
+                //2 trigger multicast of public keys
+                p2TriggerMulticastOfPublicKeys();
+                multiCastHappened = true;
+            }
+             System.out.println("incoming client request...");
+             socket = serverSocket.accept();//stops after this
+             new Assistant(socket, systemOut).start();
 
+        }
 	}
+
+
 
 
 }
@@ -122,25 +133,40 @@ class Assistant extends Thread {
     ObjectInputStream objectInputStream;
     ObjectOutputStream objectOutputStream;
     Block Blockchain;
+    PrintStream systemOut;
+    public static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
 
     Assistant (Socket s) {connectionSocket = s;
     }
 
+    Assistant (Socket s, PrintStream _systemOut) {connectionSocket = s;
+        systemOut = _systemOut;
+    }
+    public ArrayList<Integer> printPublicKeys(Message message){
+          return message.getPublicKeys();
+    }
     public void run(){
 
 
         try{
             objectInputStream = new ObjectInputStream(connectionSocket.getInputStream());
             objectOutputStream = new ObjectOutputStream(connectionSocket.getOutputStream());
-            Message message = (Message)objectInputStream.readObject();
-            //store the updated blockchain in Blockchain
-            this.Blockchain = message.blockChain;
+            //Message returnMessage = (Message)objectInputStream.readObject();
+             Object returnMessage = (Object)objectInputStream.readObject();
+            //store the updated blockchain in blockchain
+            //this.Blockchain = returnMessage.blockChain;
 
             //close the communication between the server and the client
-            objectOutputStream.writeObject(message);
+            objectOutputStream.writeObject(returnMessage);
+
+            systemOut.println("Test: Server printing message from client : " + returnMessage);
             connectionSocket.close();
 
             //close the Input/Output operation if there is a failure
+
+            //test code delete
+            //printPublicKeys(message);
+
 
 
         }catch (IOException ioe){System.out.println(ioe);
@@ -163,5 +189,29 @@ class Assistant extends Thread {
     //logical & the result to get the appropriate text we need.
     //convert the final result to string
 
+
+}
+
+
+
+class ServerSingleton implements Serializable {
+    private static ServerSingleton myInstance = null;
+    private static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
+
+    public static ArrayList<Integer> getPublicKeys() {
+        return publicKeys;
+    }
+
+    public static void setPublicKeys(ArrayList<Integer> publicKeys) {
+        ServerSingleton.publicKeys = publicKeys;
+    }
+
+
+    public static ServerSingleton getInstance() {
+        if (myInstance == null) {
+            myInstance = new ServerSingleton();
+        }
+        return myInstance;
+    }
 
 }

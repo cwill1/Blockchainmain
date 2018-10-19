@@ -4,6 +4,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 //test for 6th commit
 public class Client {
@@ -11,6 +12,7 @@ public class Client {
     Socket socket = null;
     ObjectOutputStream objectOutputStream = null;
     ObjectInputStream objectInputStream = null;
+    public static ArrayList<Integer> publicKeys = new ArrayList<Integer>();
 
 
     //ports
@@ -51,6 +53,9 @@ public class Client {
 			socket.close();
 	}
 	*/
+    public ArrayList<Integer> getPublicKeys(){
+        return publicKeys;
+    }
 
     public void connectAndSendMessage(String _message, Integer _port) throws UnknownHostException, IOException, ClassNotFoundException {
         Socket socket = new Socket("localhost", _port);
@@ -63,14 +68,18 @@ public class Client {
         socket.close();
     }
 
-    public void connectAndSendMessage(ArrayList<Integer> _message , Integer _port) throws UnknownHostException, IOException, ClassNotFoundException {
+    public void connectAndSendMessage(ArrayList<Integer> publicKeys, Integer _port) throws UnknownHostException, IOException,
+            ClassNotFoundException, InterruptedException {
+        Thread.sleep(1000);
+
         Socket socket = new Socket("localhost", _port);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        Message message = new Message(_message);
-        objectOutputStream.writeObject(message);
+        Message keys = new Message(publicKeys);
+        keys.setPublicKeys(publicKeys);
+        Client.publicKeys = publicKeys;
+        objectOutputStream.writeObject(keys);
         Message returnMessage = (Message)objectInputStream.readObject();
-        System.out.println(returnMessage.getResult());
         socket.close();
     }
 
