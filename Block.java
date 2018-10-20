@@ -7,6 +7,9 @@ public class Block {
     public String previousHash;
     private String blockData;
 
+    //imported data
+
+
     public Block(String _data){
         this.blockData = _data;
     }

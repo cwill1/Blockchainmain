@@ -10,7 +10,7 @@ public class testClient {
 
     public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
 
-        Socket socket = new Socket("localhost", 4930);
+        Socket socket = new Socket("localhost", 4670);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
         String message = "I think you got it this time Chris";

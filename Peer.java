@@ -106,8 +106,11 @@ public class Peer {
         //instantiate a peer
 	    head = new Block("firstblock");
         serverSocket = new ServerSocket(PORT);
+        // 3 All processes start with the same initial one-block(dummy) entry form of the block chain
+        mySingleton.initiateBlockChain();
+
         while(true) {
-            //3rd port ..multicast once
+            //third port ..multicast once
             if(PORT == 4932){
                 //2 trigger multicast of public keys
                 p2TriggerMulticastOfPublicKeys();
@@ -117,6 +120,12 @@ public class Peer {
              System.out.println("incoming client request...");
              socket = serverSocket.accept();//stops after this
              new Assistant(socket, systemOut).start();
+
+            //4 Read the data file for this process
+            if(mySingleton.checkIfPublicKeyIsSet()){
+                //spawn a new thread to read in the input from the files
+
+            }
 
         }
 	}
@@ -199,8 +208,10 @@ class Assistant extends Thread {
 
 class ServerSingleton implements Serializable {
     private static ServerSingleton myInstance = null;
-    private static Object publicKeys = new ArrayList<String>();
+    //private static Object publicKeys = new ArrayList<Object>();
+    private static Object publicKeys;
     private static Block blockChain;
+    private static Boolean publicKeysSet = false;
 
     public static Object getPublicKeys() {
         return publicKeys;
@@ -209,10 +220,26 @@ class ServerSingleton implements Serializable {
     public static void setPublicKeys(ArrayList<String> publicKeys) {
         ServerSingleton.publicKeys = publicKeys;
     }
-    public static void setPublicKeys(Object publicKeys) {
-        ServerSingleton.publicKeys = publicKeys;
+    public static void setPublicKeys(Object _publicKeys) {
+        ServerSingleton.publicKeys = _publicKeys;
+        ArrayList<Object> keys;
+        //code to parse the incoming public keys
+        keys = new ArrayList<Object>();
+        for (Object i: (ArrayList<Object>)_publicKeys){
+           i = i.toString();
+           keys.add(i);
+        }
+        ServerSingleton.publicKeys = keys;
+        if(publicKeys != null) {
+            publicKeysSet = true;
+        }
     }
-
+    public static void addRecord(){
+        //blockChain.next = new Block();
+    }
+    public static Boolean checkIfPublicKeyIsSet(){
+        return publicKeysSet;
+    }
 
     public static ServerSingleton getInstance() {
         if (myInstance == null) {
@@ -220,5 +247,34 @@ class ServerSingleton implements Serializable {
         }
         return myInstance;
     }
+    public static void initiateBlockChain(){
+        blockChain = new Block("<BlockRecord>\n" +
+                "  <SIGNED-SHA256> [B@5f150435 </SIGNED-SHA256> <!-- Verification procees SignedSHA-256-String  -->\n" +
+                "  <SHA-256-String> 63b95d9c17799463acb7d37c85f255a511f23d7588d871375d0119ba4a96a </SHA-256-String>\n" +
+                "  <!-- Start SHA-256 Data that was hashed -->\n" +
+                "  <VerificationProcessID> 1 </VerificationProcessID> <!-- Process that is verifying this block, for credit-->\n" +
+                "  <PreviousHash> From the previous block in the chain </PreviousHash>\n" +
+                "  <Seed> Your random 256 bit string </Seed> <!-- guess the value to complete the work-->\n" +
+                "  <BlockNum> 1 </BlockNum> <!-- increment with each block prepended -->\n" +
+                "  <BlockID> UUID </BlockID> <!-- Unique identifier for this block -->\n" +
+                "  <SignedBlockID> BlockID signed by creating process </SignedBlockID> <!-- Creating process signature -->\n" +
+                "  <CreatingProcessID> 0 </CreatingProcessID> <!-- Process that made the ledger entry -->\n" +
+                "  <TimeStamp> 2017-09-01.10:26:35 </TimeStamp>\n" +
+                "  <DataHash> The creating process SHA-256 hash of the input data </DataHash> <!-- for auditing if Secret Key exposed -->\n" +
+                "  <FName> Joseph </FName>\n" +
+                "  <LName> Ng </LName>\n" +
+                "  <DOB> 1995.06.22 </DOB> <!-- date of birth -->\n" +
+                "  <SSNUM> 987-65-4321 </SSNUM>\n" +
+                "  <Diagnosis> Measels </Diagnosis>\n" +
+                "  <Treatment> Bedrest </Treatment>\n" +
+                "  <Rx> aspirin </Rx>\n" +
+                "  <Notes> Use for debugging and extension </Notes>\n" +
+                "<!-- End SHA-256 Data that was hashed -->\n" +
+                "</BlockRecord>");
+
+    }
 
 }
+
+
+
